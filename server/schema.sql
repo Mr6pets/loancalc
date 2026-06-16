@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS calc_records (
   overcharge_amount DECIMAL(12, 2) DEFAULT 0 COMMENT '多收金额',
   input_json JSON NOT NULL COMMENT '完整输入参数',
   result_json JSON NOT NULL COMMENT '完整计算结果',
+  device_name VARCHAR(60) DEFAULT '' COMMENT '设备名称',
   INDEX idx_created_at (created_at),
   INDEX idx_apr (annual_apr)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='贷款计算历史记录';

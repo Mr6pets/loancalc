@@ -11,12 +11,14 @@ function toRecord(row: {
   createdAt: string;
   input: LoanInput;
   result: CalcResult;
+  deviceName?: string;
 }): CalcRecord {
   return {
     id: row.id,
     createdAt: row.createdAt,
     input: row.input,
     result: row.result,
+    deviceName: row.deviceName || '',
   };
 }
 
@@ -30,6 +32,23 @@ function syncToLocal(records: CalcRecord[]) {
 export function useRecords() {
   const [records, setRecords] = useState<CalcRecord[]>([]);
   const [apiAvailable, setApiAvailable] = useState<boolean>(!!API_BASE);
+
+  // 手动刷新（清空本地，从服务器重新拉取）
+  const refresh = useCallback(() => {
+    setRecords([]);
+    if (!API_BASE) return;
+    fetch(`${API_BASE}/api/records`)
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && Array.isArray(json.data)) {
+          const list = json.data.map(toRecord);
+          setRecords(list);
+          setApiAvailable(true);
+          syncToLocal(list);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // 初始化：先试 API，失败则读本地
   useEffect(() => {
@@ -91,8 +110,8 @@ export function useRecords() {
       fetch(`${API_BASE}/api/records`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(record),
-      }).catch(() => {});
+        body: JSON.stringify({ ...record, userAgent: navigator.userAgent }),
+      }).catch(err => console.warn('[loancalc] 保存记录失败:', err));
     }
 
     return record;
@@ -106,7 +125,7 @@ export function useRecords() {
 
     if (API_BASE) {
       fetch(`${API_BASE}/api/records/${encodeURIComponent(id)}`, { method: 'DELETE' })
-        .catch(() => {});
+        .catch(err => console.warn('[loancalc] 删除记录失败:', err));
     }
   }, [records]);
 
@@ -117,9 +136,9 @@ export function useRecords() {
 
     if (API_BASE) {
       fetch(`${API_BASE}/api/records`, { method: 'DELETE' })
-        .catch(() => {});
+        .catch(err => console.warn('[loancalc] 清空记录失败:', err));
     }
   }, []);
 
-  return { records, saveRecord, deleteRecord, clearAll, apiAvailable };
+  return { records, saveRecord, deleteRecord, clearAll, apiAvailable, refresh };
 }

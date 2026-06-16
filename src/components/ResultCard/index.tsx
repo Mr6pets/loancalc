@@ -20,11 +20,8 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onViewDetail }) => {
       ? { start: '#f59e0b', end: '#f97316' }
       : { start: '#10b981', end: '#06b6d4' };
 
-  // SVG ring
-  const radius = 90;
-  const circumference = 2 * Math.PI * radius;
+  // 环形百分比
   const percent = Math.min(annualAPR / 0.36, 1);
-  const offset = circumference * (1 - percent);
 
   const isForward = mode === 'forward';
   const isFlow = mode === 'flow';
@@ -47,35 +44,38 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onViewDetail }) => {
 
       {/* SVG 环形仪表盘 */}
       <View className={styles.gaugeSection}>
-        <svg width="240" height="240" viewBox="0 0 240 240" className={styles.gaugeSvg}>
+        <svg width="260" height="260" viewBox="0 0 260 260" className={styles.gaugeSvg}>
           <defs>
             <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor={ringColor.start} />
               <stop offset="100%" stopColor={ringColor.end} />
             </linearGradient>
             <filter id="ringGlow">
-              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
           </defs>
-          <circle cx="120" cy="120" r={radius} fill="none" stroke="#e5e7eb" strokeWidth="10" />
+          {/* 背景轨道 */}
+          <circle cx="130" cy="130" r="100" fill="none" stroke="#e8ecf1" strokeWidth="14" />
+          <circle cx="130" cy="130" r="100" fill="none" stroke="#f0f2f5" strokeWidth="8" opacity="0.6" />
+          {/* 激活弧线 */}
           <circle
-            cx="120" cy="120" r={radius}
+            cx="130" cy="130" r="100"
             fill="none"
             stroke="url(#ringGrad)"
-            strokeWidth="10"
+            strokeWidth="14"
             strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            transform="rotate(-90 120 120)"
+            strokeDasharray={2 * Math.PI * 100}
+            strokeDashoffset={2 * Math.PI * 100 * (1 - percent)}
+            transform="rotate(-90 130 130)"
             filter="url(#ringGlow)"
             className={styles.gaugeArc}
           />
         </svg>
-        {/* 中心 */}
+        {/* 中心文字 */}
         <View className={styles.gaugeCenter}>
           <Text className={styles.gaugeLabel}>
             {isFlow ? '流水 XIRR' : isForward ? '年化利率' : '实际年化'}

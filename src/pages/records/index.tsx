@@ -8,7 +8,7 @@ import CustomTabBar from '@/components/CustomTabBar';
 import styles from './index.module.scss';
 
 export default function RecordsPage() {
-  const { records, deleteRecord, clearAll } = useRecords();
+  const { records, deleteRecord, clearAll, refresh } = useRecords();
 
   const handleViewDetail = (id: string) => {
     Taro.navigateTo({ url: `/pages/detail/index?id=${id}` });
@@ -47,9 +47,10 @@ export default function RecordsPage() {
       return (
         <>
           <View className={styles.header}>
-            <Text className={styles.headerTitle}>历史记录</Text>
-          </View>
-          <View className={styles.summaryStrip}>
+          <Text className={styles.headerTitle}>历史记录</Text>
+          <Text className={styles.refreshBtn} onClick={refresh}>刷新</Text>
+        </View>
+        <View className={styles.summaryStrip}>
             <View className={styles.summaryItem}>
               <Text className={styles.summaryValue}>0</Text>
               <Text className={styles.summaryLabel}>次核算</Text>
@@ -72,6 +73,7 @@ export default function RecordsPage() {
       <>
         <View className={styles.header}>
           <Text className={styles.headerTitle}>历史记录</Text>
+          <Text className={styles.refreshBtn} onClick={refresh}>刷新</Text>
         </View>
 
         <View className={styles.summaryStrip}>

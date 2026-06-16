@@ -11,11 +11,15 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(112rpx + env(safe-area-inset-bottom));
   &::-webkit-scrollbar { display: none; }
 }
 
 // ============ 头部区域 ============
 .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: $spacing-xl $page-padding $spacing-sm;
 
   .headerTitle {
@@ -24,6 +28,15 @@
     @include gradient-text($gradient-primary);
     display: block;
   }
+}
+
+.refreshBtn {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  padding: 6rpx 20rpx;
+  border: 1rpx solid $color-primary;
+  border-radius: $radius-round;
+  white-space: nowrap;
 }
 
 // 统计摘要

@@ -51,56 +51,57 @@
 .gaugeSection {
   @include flex-center;
   position: relative;
-  margin-bottom: $spacing-lg;
-  width: 240rpx;
-  height: 240rpx;
-  margin-left: auto;
-  margin-right: auto;
+  width: 260rpx;
+  height: 260rpx;
+  margin: 0 auto 24rpx;
 }
 
 .gaugeSvg {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4rpx 16rpx rgba(0, 0, 0, 0.08));
 }
 
 .gaugeArc {
-  transition: stroke-dashoffset 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: stroke-dashoffset 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-// 中心浮层
+// 中心文字
 .gaugeCenter {
   position: relative;
   z-index: 1;
-  background: #fff;
-  border-radius: 50%;
-  width: 160rpx;
-  height: 160rpx;
   @include flex-center;
   flex-direction: column;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
 }
 
 .gaugeLabel {
-  font-size: $font-size-xs;
+  font-size: 22rpx;
+  font-weight: $font-weight-medium;
   color: $color-text-tertiary;
-  margin-bottom: 2rpx;
+  letter-spacing: 2rpx;
 }
 
 .gaugeValue {
-  font-size: 40rpx;
-  font-weight: 800;
+  font-size: 52rpx;
+  font-weight: 900;
   display: block;
-  line-height: 1.1;
+  line-height: 1;
+  margin: 6rpx 0;
+  letter-spacing: -2rpx;
 }
 
 .gaugeBadge {
-  margin-top: 6rpx;
-  padding: 2rpx 14rpx;
+  margin-top: 2rpx;
+  padding: 4rpx 20rpx;
   border-radius: $radius-round;
 }
 
 .gaugeBadgeText {
-  font-size: 18rpx;
-  font-weight: $font-weight-semibold;
+  font-size: 20rpx;
+  font-weight: $font-weight-bold;
   color: #fff;
 }
 

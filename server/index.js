@@ -10,6 +10,16 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 
+// 请求日志
+app.use((req, _res, next) => {
+  const isApi = req.path.startsWith('/api');
+  if (isApi) {
+    const body = req.method !== 'GET' ? JSON.stringify(req.body) : '';
+    console.log(`[${req.method}] ${req.path} ${body}`);
+  }
+  next();
+});
+
 // 字段名映射（MySQL → 统一 camelCase，SQLite 已用 camelCase）
 function mapRow(r) {
   const ijson = typeof r.input_json === 'string' ? JSON.parse(r.input_json) : r.input_json;
@@ -30,12 +40,49 @@ function mapRow(r) {
     overchargeAmount: Number(r.overcharge_amount || 0),
     input: ijson,
     result: rjson,
+    deviceName: r.device_name || '',
   };
+}
+
+// UA → 友好设备名
+function parseDeviceName(ua) {
+  if (!ua) return '未知设备';
+  let os = '', br = '';
+  if (/iPhone|iPad/.test(ua)) {
+    os = ua.includes('iPad') ? 'iPad' : 'iPhone';
+  } else if (/Android/.test(ua)) {
+    const m = ua.match(/Android\s([\d.]+)/);
+    os = m ? `Android ${m[1]}` : 'Android';
+  } else if (/Windows NT 10/.test(ua)) {
+    os = 'Windows 10';
+  } else if (/Windows NT/.test(ua)) {
+    os = 'Windows';
+  } else if (/Mac OS X/.test(ua)) {
+    const m = ua.match(/Mac OS X ([_\d]+)/);
+    os = m ? `macOS ${m[1].replace(/_/g,'.')}` : 'macOS';
+  } else if (/Linux/.test(ua)) {
+    os = 'Linux';
+  }
+  if (/Edg\//.test(ua)) { br = 'Edge'; }
+  else if (/\bChrome\//.test(ua)) { br = 'Chrome'; }
+  else if (/Safari\//.test(ua)) { br = 'Safari'; }
+  else if (/Firefox\//.test(ua)) { br = 'Firefox'; }
+  return [os, br].filter(Boolean).join(' / ') || ua.slice(0, 60);
 }
 
 // ─── /admin ─── 后台管理页面
 app.get('/admin', (_req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// ─── POST /api/admin/verify ─── 后台登录验证
+app.post('/api/admin/verify', (req, res) => {
+  const adminPwd = process.env.ADMIN_PASSWORD || 'admin123';
+  if (req.body.password === adminPwd) {
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false, error: '密码错误' });
+  }
 });
 
 // ─── GET /api/stats ─── 统计概览
@@ -77,19 +124,23 @@ app.get('/api/records', async (req, res) => {
 // ─── POST /api/records ─── 创建记录
 app.post('/api/records', async (req, res) => {
   try {
-    const { id, createdAt, input, result } = req.body;
+    const { id, createdAt, input, result, userAgent } = req.body;
     if (!input || !result) {
       return res.status(400).json({ success: false, error: '缺少 input/result' });
     }
+    // ISO 8601 → MySQL DATETIME (YYYY-MM-DD HH:MM:SS)
+    const iso = createdAt || new Date().toISOString();
+    const mysqlTime = iso.replace('T', ' ').replace(/\.\d{3}Z$/, '');
+    const deviceName = parseDeviceName(userAgent || '');
     await db.execute(
       `INSERT INTO calc_records
         (id, created_at, principal, months, repay_type, calc_mode,
          annual_apr, total_payment, total_interest, total_fee,
-         is_overcharged, overcharge_amount, input_json, result_json)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         is_overcharged, overcharge_amount, input_json, result_json, device_name)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
-        createdAt || new Date().toISOString(),
+        mysqlTime,
         input.principal,
         input.months || 0,
         input.repayType || 'equal-installment',
@@ -102,11 +153,12 @@ app.post('/api/records', async (req, res) => {
         result.overchargeAmount || 0,
         JSON.stringify(input),
         JSON.stringify(result),
+        deviceName,
       ]
     );
     res.json({ success: true, data: { id } });
   } catch (err) {
-    console.error('[POST /api/records]', err.message);
+    console.error('[POST /api/records]', err.message, err.code || '', err.sqlMessage || '');
     res.status(500).json({ success: false, error: '保存失败' });
   }
 });

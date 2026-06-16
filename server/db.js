@@ -52,6 +52,8 @@ if (useMySQL) {
     try {
       await conn.execute(SCHEMA_MYSQL);
       console.log('[DB:MySQL] 表初始化完成');
+    } catch (err) {
+      console.error('[DB:MySQL] 建表失败:', err.message);
     } finally {
       conn.release();
     }
@@ -116,6 +118,7 @@ const SCHEMA_MYSQL = `
     overcharge_amount DECIMAL(12, 2) DEFAULT 0,
     input_json JSON NOT NULL,
     result_json JSON NOT NULL,
+    device_name VARCHAR(60) DEFAULT '' COMMENT '设备名称',
     INDEX idx_created_at (created_at),
     INDEX idx_apr (annual_apr)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
@@ -136,7 +139,8 @@ const SCHEMA_SQLITE = `
     is_overcharged INTEGER,
     overcharge_amount REAL DEFAULT 0,
     input_json TEXT NOT NULL,
-    result_json TEXT NOT NULL
+    result_json TEXT NOT NULL,
+    device_name TEXT DEFAULT ''
   );
   CREATE INDEX IF NOT EXISTS idx_created_at ON calc_records(created_at);
   CREATE INDEX IF NOT EXISTS idx_apr ON calc_records(annual_apr);

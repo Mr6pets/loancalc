@@ -59,6 +59,7 @@ export interface CalcRecord {
   createdAt: string;
   input: LoanInput;
   result: CalcResult;
+  deviceName?: string;
 }
 
 /** 账单条目（PDF提取） */
