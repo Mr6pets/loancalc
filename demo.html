@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>贷款利率核算</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB',sans-serif;background:#f2f5f8;color:#1d2129;min-height:100vh}
+.page{max-width:500px;margin:0 auto;padding-bottom:40px}
+.header{padding:32px 16px 20px;background:linear-gradient(135deg,#165DFF 0%,#4080FF 100%);color:#fff}
+.header h1{font-size:24px;font-weight:700}
+.header p{font-size:13px;opacity:.8;margin-top:4px}
+.card{background:#fff;border-radius:16px;padding:20px;margin:16px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.card-title{font-size:16px;font-weight:600;margin-bottom:16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:#4e5969;margin-bottom:6px}
+.field input{width:100%;height:44px;background:#f5f6f7;border:1px solid #e5e6eb;border-radius:10px;padding:0 12px;font-size:15px;color:#1d2129;outline:none;transition:border .2s}
+.field input:focus{border-color:#165DFF}
+.row{display:flex;gap:12px}
+.row .field{flex:1}
+.btn{width:100%;height:48px;border:none;border-radius:24px;font-size:16px;font-weight:600;color:#fff;cursor:pointer;transition:all .2s;margin-top:8px}
+.btn-primary{background:linear-gradient(135deg,#165DFF 0%,#4080FF 100%)}
+.btn-primary:active{opacity:.85;transform:scale(.98)}
+.btn-disabled{background:#c9cdd4;pointer-events:none}
+/* result */
+.result-card{margin:0 16px 16px}
+.rate-block{text-align:center;padding:20px;border-radius:12px;margin-bottom:16px}
+.rate-safe{background:linear-gradient(135deg,#e8f5e9 0%,#f1f8e9 100%)}
+.rate-danger{background:linear-gradient(135deg,#fbe9e7 0%,#fce4ec 100%)}
+.rate-label{font-size:13px;color:#86909c}
+.rate-value{font-size:52px;font-weight:700;display:block;margin:8px 0}
+.rate-value.safe{color:#00b42a}
+.rate-value.danger{color:#f53f3f}
+.rate-hint{font-size:13px;color:#86909c}
+.info-row{display:flex;gap:12px;margin-bottom:12px}
+.info-item{flex:1;background:#f2f5f8;border-radius:10px;padding:14px;text-align:center}
+.info-label{font-size:12px;color:#86909c}
+.info-value{font-size:20px;font-weight:600;color:#1d2129;display:block;margin-top:4px}
+.verdict{padding:12px;border-radius:10px;text-align:center;margin-top:8px;font-size:14px;font-weight:500}
+.verdict-good{background:#e8f5e9;color:#00b42a}
+.verdict-bad{background:#fbe9e7;color:#f53f3f}
+/* schedule */
+.schedule{max-height:360px;overflow-y:auto}
+.sch-header{display:flex;background:#f5f6f7;border-radius:8px;padding:8px 12px;margin-bottom:4px;font-size:12px;color:#86909c;position:sticky;top:0}
+.sch-header span,.sch-row span{flex:1;text-align:center}
+.sch-row{display:flex;padding:8px 12px;border-bottom:1px solid #f2f3f5;font-size:13px}
+.sch-row:last-child{border-bottom:none}
+/* tabs */
+.tabs{display:flex;background:#fff;border-top:1px solid #e5e6eb;position:sticky;bottom:0}
+.tab{flex:1;text-align:center;padding:10px 0;font-size:12px;color:#86909c;cursor:pointer}
+.tab.active{color:#165DFF;font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.empty{text-align:center;padding:60px 20px;color:#86909c}
+.empty-icon{font-size:60px;display:block;margin-bottom:12px}
+/* demo */
+.demo-card{background:linear-gradient(135deg,#165DFF 0%,#4080FF 100%);border-radius:16px;padding:20px;margin:16px;color:#fff}
+.demo-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px}
+.demo-row:last-child{margin-bottom:0}
+.demo-label{opacity:.8}
+.demo-value{font-weight:600}
+.note{background:#fef7e0;border-radius:10px;padding:12px;margin:16px;font-size:13px;color:#8b6914;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="page" id="app"></div>
+
+<script type="module">
+// ============ 利率计算引擎 ============
+function calcIRR(P, n, A) {
+  if (A * n <= P) return 0;
+  let lo = 0.00001, hi = 0.05;
+  for (let i = 0; i < 80; i++) {
+    const mid = (lo + hi) / 2;
+    const pmt = P * mid * Math.pow(1 + mid, n) / (Math.pow(1 + mid, n) - 1);
+    if (pmt > A) hi = mid; else lo = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+function genSchedule(P, n, r, A) {
+  const schedule = [];
+  let remaining = P;
+  for (let i = 1; i <= n; i++) {
+    const interest = Math.round(remaining * r * 100) / 100;
+    const principal = Math.round((A - interest) * 100) / 100;
+    remaining = Math.round((remaining - principal) * 100) / 100;
+    schedule.push({ period: i, principal, interest, payment: A, remaining: Math.max(0, remaining) });
+  }
+  return schedule;
+}
+
+function calculate(principal, months, monthlyPayment, contractRate, upfrontFee) {
+  const r = calcIRR(principal, months, monthlyPayment);
+  const schedule = genSchedule(principal, months, r, monthlyPayment);
+  const annualNominal = r * 12;
+  const annualAPR = Math.pow(1 + r, 12) - 1;
+  const totalInterest = schedule.reduce((s, i) => s + i.interest, 0);
+  const totalPayment = schedule.reduce((s, i) => s + i.payment, 0);
+  const totalFee = totalInterest + upfrontFee;
+
+  let isOvercharged = null, overchargeAmount = 0;
+  if (contractRate > 0) {
+    const cr = contractRate / 100 / 12;
+    const expectedSchedule = genSchedule(principal, months, cr, monthlyPayment);
+    const expectedInterest = expectedSchedule.reduce((s, i) => s + i.interest, 0);
+    const contractAPR = Math.pow(1 + cr, 12) - 1;
+    isOvercharged = Math.abs(annualAPR - contractAPR) > 0.001;
+    overchargeAmount = Math.round((totalInterest - expectedInterest) * 100) / 100;
+  }
+  return { r, annualNominal, annualAPR, schedule, totalPayment, totalInterest, totalFee, isOvercharged, overchargeAmount };
+}
+
+const f = (v, d = 2) => v.toFixed(d);
+const fmtMoney = v => v.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// ============ 存储 ============
+const KEY = 'calc_records_v2';
+function loadRecords() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
+function saveRecords(arr) { localStorage.setItem(KEY, JSON.stringify(arr.slice(0, 30))); }
+
+// ============ 2017 浦发万用金演示数据 ============
+const demoData = {
+  principal: 150000, months: 36, monthlyPayment: 5389.81, totalInterest: 44033.16,
+  apr: (Math.pow(1 + 0.014633, 12) - 1),
+  bills: [
+    [1, '201712', 3194.81, 2195.00], [2, '201801', 3241.56, 2148.25],
+    [3, '201802', 3288.99, 2100.82], [4, '201803', 3337.12, 2052.69],
+    [5, '201804', 3385.96, 2003.85], [6, '201805', 3435.50, 1954.31],
+    [7, '201806', 3485.78, 1904.03], [8, '201807', 3536.78, 1853.03],
+    [9, '201808', 3588.54, 1801.27], [10, '201809', 3641.05, 1748.76],
+  ]
+};
+
+// ============ App ============
+const { createElement: h, useState, useEffect, useCallback, Fragment } = React;
+
+// EmptyState
+function EmptyState({ icon, text, subText }) {
+  return h('div', { className: 'empty' },
+    h('span', { className: 'empty-icon' }, icon || '📋'),
+    h('div', { style: { fontSize: 14 } }, text || '暂无数据'),
+    subText && h('div', { style: { fontSize: 12, color: '#c9cdd4', marginTop: 4 } }, subText)
+  );
+}
+
+// CalcCard
+function CalcCard({ onSubmit }) {
+  const [principal, setPrincipal] = useState('');
+  const [months, setMonths] = useState('');
+  const [monthlyPayment, setMonthlyPayment] = useState('');
+  const [contractRate, setContractRate] = useState('');
+  const [upfrontFee, setUpfrontFee] = useState('');
+
+  const valid = principal && months && monthlyPayment;
+  const go = () => {
+    if (!valid) return;
+    onSubmit({
+      principal: parseFloat(principal),
+      months: parseInt(months),
+      monthlyPayment: parseFloat(monthlyPayment),
+      contractRate: contractRate ? parseFloat(contractRate) : 0,
+      upfrontFee: upfrontFee ? parseFloat(upfrontFee) : 0,
+    });
+  };
+
+  return h('div', { className: 'card' },
+    h('div', { className: 'card-title' }, '贷款参数'),
+    h('div', { className: 'field' },
+      h('label', null, '贷款本金（元）'),
+      h('input', { type: 'number', placeholder: '如 150000', value: principal, onChange: e => setPrincipal(e.target.value) })
+    ),
+    h('div', { className: 'row' },
+      h('div', { className: 'field' },
+        h('label', null, '总期数（月）'),
+        h('input', { type: 'number', placeholder: '如 36', value: months, onChange: e => setMonths(e.target.value) })
+      ),
+      h('div', { className: 'field' },
+        h('label', null, '月还款额（元）'),
+        h('input', { type: 'number', placeholder: '如 5389.81', value: monthlyPayment, onChange: e => setMonthlyPayment(e.target.value) })
+      )
+    ),
+    h('div', { className: 'row' },
+      h('div', { className: 'field' },
+        h('label', null, '合同年利率（选填，%'),
+        h('input', { type: 'number', placeholder: '如 9.84', value: contractRate, onChange: e => setContractRate(e.target.value) })
+      ),
+      h('div', { className: 'field' },
+        h('label', null, '前置费用（选填）'),
+        h('input', { type: 'number', placeholder: '如 20', value: upfrontFee, onChange: e => setUpfrontFee(e.target.value) })
+      )
+    ),
+    h('button', { className: 'btn ' + (valid ? 'btn-primary' : 'btn-disabled'), onClick: go }, '开始核算')
+  );
+}
+
+// ResultCard
+function ResultCard({ result }) {
+  const { annualAPR, totalInterest, totalFee, isOvercharged, overchargeAmount } = result;
+  const high = annualAPR > 0.24;
+
+  return h('div', { className: 'card result-card' },
+    h('div', { className: 'card-title' }, '核算结果'),
+    h('div', { className: 'rate-block ' + (high ? 'rate-danger' : 'rate-safe') },
+      h('div', { className: 'rate-label' }, '实际年化利率 (APR)'),
+      h('span', { className: 'rate-value ' + (high ? 'danger' : 'safe') }, f(annualAPR * 100) + '%'),
+      h('div', { className: 'rate-hint' }, high ? '利率偏高，请注意' : '年化利率正常')
+    ),
+    h('div', { className: 'info-row' },
+      h('div', { className: 'info-item' },
+        h('span', { className: 'info-label' }, '总利息'),
+        h('span', { className: 'info-value' }, '¥' + fmtMoney(totalInterest))
+      ),
+      h('div', { className: 'info-item' },
+        h('span', { className: 'info-label' }, '总费用'),
+        h('span', { className: 'info-value' }, '¥' + fmtMoney(totalFee))
+      )
+    ),
+    isOvercharged !== null && h('div', { className: 'verdict ' + (isOvercharged ? 'verdict-bad' : 'verdict-good') },
+      isOvercharged ? `可能多收费 ¥${fmtMoney(Math.abs(overchargeAmount))}，请核实合同利率` : '利率与合同一致，未发现多收费'
+    )
+  );
+}
+
+// Tab: 计算器
+function TabCalc() {
+  const [result, setResult] = useState(null);
+
+  const handleCalc = useCallback((data) => {
+    const res = calculate(data.principal, data.months, data.monthlyPayment, data.contractRate, data.upfrontFee);
+    setResult(res);
+    // 保存记录
+    const records = loadRecords();
+    records.unshift({ id: Date.now(), createdAt: new Date().toISOString(), input: data, result: res });
+    saveRecords(records);
+  }, []);
+
+  return h(Fragment, null,
+    h('div', { className: 'header' },
+      h('h1', null, '贷款利率核算'),
+      h('p', null, '输入贷款参数，一键反推真实年化利率')
+    ),
+    h(CalcCard, { onSubmit: handleCalc }),
+    result && h(ResultCard, { result }),
+    result && h('div', { className: 'card' },
+      h('div', { className: 'card-title' }, '还款明细表'),
+      h('div', { className: 'schedule' },
+        h('div', { className: 'sch-header' },
+          h('span', null, '期数'), h('span', null, '本金'), h('span', null, '利息'), h('span', null, '月供'), h('span', null, '剩余')
+        ),
+        result.schedule.map(s => h('div', { className: 'sch-row', key: s.period },
+          h('span', null, s.period),
+          h('span', null, '¥' + fmtMoney(s.principal)),
+          h('span', null, '¥' + fmtMoney(s.interest)),
+          h('span', null, '¥' + fmtMoney(s.payment)),
+          h('span', null, '¥' + fmtMoney(s.remaining))
+        ))
+      )
+    )
+  );
+}
+
+// Tab: 账单分析
+function TabBills() {
+  const result = calculate(demoData.principal, demoData.months, demoData.monthlyPayment, 0, 0);
+  return h('div', null,
+    h('div', { className: 'header' },
+      h('h1', null, '账单分析'),
+      h('p', null, '基于真实账单提取的演示数据（浦发万用金 2017-2020）')
+    ),
+    h('div', { className: 'note' },
+      '注意：完整 PDF 账单解析需后端服务配合，此页面展示的是从 2017年12月~2020年11月真实账单中提取的演示数据（前10期）'
+    ),
+    h('div', { className: 'demo-card' },
+      h('div', { className: 'demo-row' }, h('span', { className: 'demo-label' }, '放款本金'), h('span', { className: 'demo-value' }, '¥' + fmtMoney(demoData.principal))),
+      h('div', { className: 'demo-row' }, h('span', { className: 'demo-label' }, '期数'), h('span', { className: 'demo-value' }, demoData.months + ' 期（等额本息）')),
+      h('div', { className: 'demo-row' }, h('span', { className: 'demo-label' }, '月还款'), h('span', { className: 'demo-value' }, '¥' + fmtMoney(demoData.monthlyPayment))),
+      h('div', { className: 'demo-row' }, h('span', { className: 'demo-label' }, '总利息'), h('span', { className: 'demo-value' }, '¥' + fmtMoney(demoData.totalInterest))),
+      h('div', { className: 'demo-row' }, h('span', { className: 'demo-label' }, '实际年化 APR'), h('span', { className: 'demo-value' }, f(result.annualAPR * 100) + '%'))
+    ),
+    h('div', { className: 'card' },
+      h('div', { className: 'card-title' }, '还款明细（前10期）'),
+      h('div', { className: 'schedule' },
+        h('div', { className: 'sch-header' }, h('span', null, '期'), h('span', null, '月份'), h('span', null, '本金'), h('span', null, '利息')),
+        demoData.bills.map(b => h('div', { className: 'sch-row', key: b[0] },
+          h('span', null, b[0]), h('span', null, b[1]), h('span', null, '¥' + fmtMoney(b[2])), h('span', null, '¥' + fmtMoney(b[3]))
+        ))
+      )
+    )
+  );
+}
+
+// Tab: 历史记录
+function TabRecords() {
+  const [records, setRecords] = useState(loadRecords);
+  const refresh = () => setRecords(loadRecords());
+
+  useEffect(() => {
+    const handler = () => refresh();
+    window.addEventListener('focus', handler);
+    return () => window.removeEventListener('focus', handler);
+  }, []);
+
+  // 每5秒刷新
+  useEffect(() => {
+    const t = setInterval(refresh, 3000);
+    return () => clearInterval(t);
+  }, []);
+
+  const del = (id) => { const r = records.filter(x => x.id !== id); saveRecords(r); setRecords(r); };
+  const clear = () => { localStorage.removeItem(KEY); setRecords([]); };
+
+  if (!records.length) return h('div', null,
+    h('div', { className: 'header' }, h('h1', null, '历史记录')),
+    h(EmptyState, { icon: '📊', text: '暂无计算记录', subText: '在计算器页面完成核算后会自动保存' })
+  );
+
+  return h('div', null,
+    h('div', { className: 'header' }, h('h1', null, '历史记录')),
+    records.map(r => h('div', { className: 'card', key: r.id, style: { marginBottom: 12 } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 } },
+        h('span', { style: { fontSize: 12, color: '#86909c' } }, new Date(r.createdAt).toLocaleString('zh-CN')),
+        h('span', { style: { fontSize: 12, color: '#f53f3f', cursor: 'pointer' }, onClick: () => del(r.id) }, '删除')
+      ),
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+        h('div', null,
+          h('div', { style: { fontSize: 14 } }, `本金 ¥${fmtMoney(r.input.principal)} · ${r.input.months}期`),
+          h('div', { style: { fontSize: 12, color: '#4e5969', marginTop: 4 } }, `月供 ¥${fmtMoney(r.input.monthlyPayment)}`)
+        ),
+        h('span', { style: { fontSize: 24, fontWeight: 700, color: r.result.annualAPR > 0.24 ? '#f53f3f' : '#00b42a' } }, f(r.result.annualAPR * 100) + '%')
+      )
+    )),
+    records.length > 1 && h('div', { style: { textAlign: 'center', padding: '12px 0' } },
+      h('span', { style: { fontSize: 12, color: '#86909c', cursor: 'pointer' }, onClick: clear }, '清空所有记录')
+    )
+  );
+}
+
+// Tab: 我的
+function TabMine() {
+  return h('div', null,
+    h('div', { className: 'header' }, h('h1', null, '我的')),
+    h('div', { className: 'card' },
+      h('div', { className: 'card-title' }, '使用说明'),
+      h('p', { style: { fontSize: 13, color: '#4e5969', lineHeight: 1.8 } },
+        '1. 在计算器页面输入贷款本金、期数、月还款额', h('br'),
+        '2. 可选择填写合同约定年利率，用于对比是否多收费', h('br'),
+        '3. 点击"开始核算"即可得到真实年化利率', h('br'),
+        '4. 计算结果自动保存，可在历史记录中查看', h('br'),
+        '5. 账单分析页面展示真实案例数据供参考'
+      )
+    ),
+    h('div', { className: 'card' },
+      h('div', { className: 'card-title' }, '常见概念'),
+      ['APR 年化利率|考虑时间价值的真实年利率', '名义年利率|月利率 × 12', 'IRR 内部收益率|考虑现金流时间价值', '等额本息|每月还款金额固定'].map((x, i) => {
+        const [k, v] = x.split('|');
+        return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < 3 ? '1px solid #f2f3f5' : 'none' } },
+          h('span', { style: { fontSize: 14 } }, k),
+          h('span', { style: { fontSize: 13, color: '#86909c' } }, v)
+        );
+      })
+    ),
+    h('div', { className: 'card' },
+      h('div', { className: 'card-title' }, '常见问题'),
+      h('p', { style: { fontSize: 13, color: '#4e5969', lineHeight: 1.6 } },
+        'Q: 为什么银行说的费率和我算出来的不一样？', h('br'),
+        'A: 银行宣传的常是"月手续费率"，本工具计算的是真实年化利率(APR)，两者差异可能很大。', h('br'), h('br'),
+        'Q: 多少利率算合理？', h('br'),
+        'A: 2024年消费贷 APR 通常在 3.5%~15%。2017年信用卡现金分期 APR 在 11%~19% 区间较常见。超24%需警惕。'
+      )
+    ),
+    h('div', { className: 'card' },
+      h('div', { className: 'card-title' }, '关于'),
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '8px 0' } }, h('span', { style: { fontSize: 14 } }, '版本'), h('span', { style: { fontSize: 13, color: '#86909c' } }, '1.0.0')),
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '8px 0' } }, h('span', { style: { fontSize: 14 } }, '功能'), h('span', { style: { fontSize: 13, color: '#86909c' } }, '贷款利率核算与验证'))
+    )
+  );
+}
+
+function App() {
+  const [tab, setTab] = useState(0);
+  const tabs = [
+    { name: '计算器', icon: '🏠', cls: TabCalc },
+    { name: '账单分析', icon: '📊', cls: TabBills },
+    { name: '历史记录', icon: '📋', cls: TabRecords },
+    { name: '我的', icon: '👤', cls: TabMine },
+  ];
+  const Content = tabs[tab].cls;
+
+  return h('div', { className: 'page' },
+    h(Content),
+    h('div', { className: 'tabs' },
+      tabs.map((t, i) => h('div', { className: 'tab' + (tab === i ? ' active' : ''), key: i, onClick: () => setTab(i) },
+        t.icon + ' ' + t.name
+      ))
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(h(App));
+</script>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</body>
+</html>

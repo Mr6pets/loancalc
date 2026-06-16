@@ -1,0 +1,84 @@
+@use '@/styles/variables.scss' as *;
+
+.tabBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  height: 112rpx;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1rpx solid rgba(79, 70, 229, 0.06);
+  box-shadow: 0 -8rpx 32rpx rgba(79, 70, 229, 0.05);
+  z-index: 9999;
+}
+
+.indicatorTrack {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3rpx;
+}
+
+.indicator {
+  width: 25%;
+  height: 100%;
+  background: $gradient-primary;
+  border-radius: 0 0 3rpx 3rpx;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tabItem {
+  flex: 1;
+  @include flex-center;
+  flex-direction: column;
+  position: relative;
+  padding: 8rpx 0 4rpx;
+
+  &:active {
+    transform: scale(0.93);
+  }
+}
+
+.svgWrap {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tabActive .svgWrap {
+  transform: translateY(-2rpx);
+}
+
+.tabLabel {
+  font-size: 18rpx;
+  font-weight: $font-weight-medium;
+  color: $color-text-tertiary;
+  margin-top: 2rpx;
+  letter-spacing: 1rpx;
+}
+
+.tabLabelActive {
+  background: $gradient-primary;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: $font-weight-bold;
+}
+
+.activeDot {
+  position: absolute;
+  bottom: 0rpx;
+  width: 6rpx;
+  height: 6rpx;
+  border-radius: 50%;
+  background: $gradient-primary;
+  animation: pulseGlow 2s ease-in-out infinite;
+}

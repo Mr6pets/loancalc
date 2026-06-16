@@ -1,0 +1,172 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: 0 $page-padding 140rpx;
+}
+
+.header {
+  padding: $spacing-xl 0 $spacing-md;
+  
+  .headerTitle {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    @include gradient-text($gradient-primary);
+    display: block;
+  }
+  
+  .headerSub {
+    font-size: $font-size-sm;
+    color: $color-text-tertiary;
+    display: block;
+    margin-top: $spacing-xs;
+    line-height: 1.6;
+  }
+}
+
+// 摘要卡片
+.summaryCard {
+  background: $gradient-hero;
+  border-radius: 24rpx;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: 0 8rpx 32rpx rgba(49, 46, 129, 0.25);
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: -40rpx;
+    right: -40rpx;
+    width: 160rpx;
+    height: 160rpx;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8rpx 0;
+  position: relative;
+  z-index: 1;
+  
+  &:last-child {
+    border-top: 1rpx solid rgba(255, 255, 255, 0.15);
+    margin-top: 8rpx;
+    padding-top: 16rpx;
+  }
+}
+
+.summaryLabel {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.summaryValue {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: #fff;
+}
+
+// 演示表格卡
+.demoCard {
+  background: $color-bg-card;
+  border-radius: 24rpx;
+  padding: $spacing-lg;
+  box-shadow: 0 4rpx 24rpx rgba(79, 70, 229, 0.06);
+  margin-bottom: $spacing-md;
+  border: 1rpx solid rgba(79, 70, 229, 0.05);
+}
+
+.demoTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+.demoDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  line-height: 1.6;
+  margin-bottom: $spacing-md;
+}
+
+// 时间轴风格表格
+.billTable {
+  width: 100%;
+}
+
+.tableHeader {
+  display: flex;
+  background: linear-gradient(135deg, $color-bg-hover 0%, #f0f0ff 100%);
+  border-radius: 12rpx;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: 4rpx;
+}
+
+.tableCell {
+  flex: 1;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  font-weight: $font-weight-semibold;
+  text-align: center;
+}
+
+.tableRow {
+  display: flex;
+  padding: $spacing-sm $spacing-md;
+  border-left: 3rpx solid transparent;
+  transition: all $transition-fast;
+  
+  &:nth-child(odd) {
+    background: $color-bg-hover;
+    border-radius: 8rpx;
+    border-left-color: $color-primary-light;
+  }
+  
+  &:nth-child(even) {
+    border-left-color: $color-secondary;
+  }
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableCellValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  text-align: center;
+  font-weight: $font-weight-medium;
+}
+
+// 提示卡片
+.noteCard {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 16rpx;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  border: 1rpx solid #fcd34d;
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.noteIcon {
+  font-size: 28rpx;
+  flex-shrink: 0;
+}
+
+.noteText {
+  font-size: $font-size-sm;
+  color: #92400e;
+  line-height: 1.6;
+  flex: 1;
+}

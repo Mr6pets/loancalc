@@ -1,0 +1,168 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: 24rpx;
+  padding: $spacing-lg;
+  box-shadow: 0 4rpx 24rpx rgba(79, 70, 229, 0.08);
+  margin: 0 $page-padding $spacing-md;
+  border: 1rpx solid rgba(79, 70, 229, 0.06);
+  animation: fadeInUp 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+// 顶部渐变装饰条
+.cardHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+  gap: $spacing-sm;
+}
+
+.headerAccent {
+  width: 6rpx;
+  height: 32rpx;
+  border-radius: 3rpx;
+  background: $gradient-primary;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  @include gradient-text($gradient-primary);
+}
+
+// ============ 分段控制器 ============
+.segRow {
+  display: flex;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: 4rpx;
+  margin-bottom: $spacing-md;
+  gap: 4rpx;
+}
+
+.segItem {
+  flex: 1;
+  @include flex-center;
+  height: 56rpx;
+  border-radius: 10rpx;
+  transition: all $transition-fast;
+}
+
+.segActive {
+  background: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+}
+
+.segText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-medium;
+}
+
+.segTextActive {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  @include gradient-text($gradient-primary);
+}
+
+.field {
+  margin-bottom: $spacing-md;
+}
+
+.label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: 10rpx;
+  display: block;
+  font-weight: $font-weight-medium;
+}
+
+// 输入框外层（图标+输入框）
+.inputWrap {
+  display: flex;
+  align-items: center;
+  background: $color-bg-hover;
+  border: 2rpx solid transparent;
+  border-radius: 16rpx;
+  transition: all $transition-fast;
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: $color-primary;
+    background: #fff;
+    box-shadow: 0 0 0 6rpx rgba(79, 70, 229, 0.08);
+  }
+}
+
+.inputIcon {
+  width: 64rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary-light;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  height: 80rpx;
+  padding: 0 $spacing-md 0 0;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.row {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.halfField {
+  flex: 1;
+}
+
+// ============ 炫酷按钮 ============
+.button {
+  @include flex-center;
+  position: relative;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  margin-top: $spacing-md;
+  overflow: hidden;
+  transition: all $transition-base;
+}
+
+.buttonDisabled {
+  background: #e5e7eb;
+  
+  .buttonText {
+    color: $color-text-tertiary;
+  }
+}
+
+.buttonActive {
+  background: $gradient-primary;
+  box-shadow: 0 8rpx 28rpx rgba(79, 70, 229, 0.4);
+  
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 4rpx 16rpx rgba(79, 70, 229, 0.3);
+  }
+  
+  // shimmer 扫光
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+   

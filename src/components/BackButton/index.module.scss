@@ -1,0 +1,21 @@
+@use '@/styles/variables.scss' as *;
+
+.backBtn {
+  position: fixed;
+  top: 12rpx;
+  left: 16rpx;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  @include flex-center;
+  z-index: 100;
+  transition: all $transition-fast;
+
+  &:active {
+    background: rgba(0, 0, 0, 0.3);
+    transform: scale(0.92);
+  }
+}

@@ -1,0 +1,47 @@
+// ============================================
+// 主题配色变量 — 炫酷金融科技风格
+// ============================================
+
+// 品牌主题色
+$color-primary: #4f46e5;
+$color-primary-light: #818cf8;
+$color-primary-dark: #3730a3;
+
+// 辅助色
+$color-secondary: #06b6d4;
+$color-secondary-light: #22d3ee;
+
+// 功能色
+$color-success: #10b981;
+$color-warning: #f59e0b;
+$color-error: #ef4444;
+$color-info: #6366f1;
+
+// 渐变
+$gradient-primary: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
+$gradient-hero: linear-gradient(135deg, #312e81 0%, #4f46e5 30%, #06b6d4 100%);
+$gradient-accent: linear-gradient(135deg, #ec4899 0%, #f59e0b 100%);
+$gradient-safe: linear-gradient(135deg, #059669 0%, #10b981 100%);
+$gradient-danger: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
+
+// 背景色
+$color-bg-page: #f0f2f8;
+$color-bg-card: #ffffff;
+$color-bg-hover: #f8f9fc;
+$color-bg-glass: rgba(255, 255, 255, 0.85);
+
+// 文本色
+$color-text-primary: #1e1b4b;
+$color-text-secondary: #4c4a6e;
+$color-text-tertiary: #9ca3af;
+$color-text-disabled: #d1d5db;
+$color-text-white: #ffffff;
+
+// 边框色
+$color-border: #e5e7eb;
+$color-divider: #f3f4f6;
+
+// 动画关键帧名（供全局使用）
+$anim-fade-in: 'fadeInUp';
+$anim-shimmer: 'shimmer';
+$anim-pulse-glow: 'pulseGlow';
