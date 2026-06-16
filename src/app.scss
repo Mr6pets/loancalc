@@ -1,6 +1,14 @@
 @use '@/styles/compat.scss';
 @use '@/styles/variables.scss' as *;
 
+// 全局：消除双滚动条，滚动完全由页面内 ScrollView 控制
+html, body, #app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 // 全局样式
 page {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB',
@@ -9,6 +17,25 @@ page {
   line-height: $line-height-normal;
   color: $color-text-primary;
   background-color: $color-bg-page;
+  overflow: hidden;
+  height: 100%;
+}
+
+// 隐藏所有滚动条（H5 下避免多层滚动栏）
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+// 修复 taro-input-core 内部 input 垂直居中
+taro-input-core {
+  display: flex;
+  align-items: center;
+}
+
+taro-input-core .weui-input {
+  line-height: normal;
 }
 
 // 全局动画关键帧

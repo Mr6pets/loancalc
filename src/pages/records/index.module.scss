@@ -1,7 +1,7 @@
 @use '@/styles/variables.scss' as *;
 
 .page {
-  height: 100vh;
+  height: 100%;
   background: $color-bg-page;
   display: flex;
   flex-direction: column;
@@ -10,6 +10,8 @@
 .scrollArea {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar { display: none; }
 }
 
 // ============ 头部区域 ============

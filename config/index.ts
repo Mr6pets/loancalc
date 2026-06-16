@@ -20,7 +20,11 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
     plugins: ['@tarojs/plugin-html'],
     defineConstants: {},
     copy: {
-      patterns: [],
+      patterns: [
+        { from: 'src/manifest.json', to: 'dist/manifest.json' },
+        { from: 'src/icon.svg', to: 'dist/icon.svg' },
+        { from: 'src/sw.js', to: 'dist/sw.js' },
+      ],
       options: {},
     },
     framework: 'react',

@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
-import { LoanInput, CalcResult, RepayType, CalcMode } from '@/types/loan';
+import { LoanInput, CalcResult, RepayType, CalcMode, CashFlow } from '@/types/loan';
 import { calculate, repayTypeLabel } from '@/utils/calc';
 import { useRecords } from '@/hooks/useRecords';
 import CalcCard from '@/components/CalcCard';
@@ -23,6 +23,8 @@ export default function IndexPage() {
     annualRate: number | undefined;
     contractRate: number | undefined;
     upfrontFee: number;
+    flows?: CashFlow[];
+    startDate?: string;
   }) => {
     const input: LoanInput = {
       principal: data.principal,
@@ -33,6 +35,8 @@ export default function IndexPage() {
       annualRate: data.annualRate,
       contractRate: data.contractRate,
       upfrontFee: data.upfrontFee,
+      flows: data.flows,
+      startDate: data.startDate,
     };
     const res = calculate(input);
     setResult(res);
@@ -48,7 +52,9 @@ export default function IndexPage() {
   const resultTitle = result
     ? result.mode === 'forward'
       ? `${repayTypeLabel(result.repayType)} 计算结果`
-      : '核算结果'
+      : result.mode === 'flow'
+        ? '流水分析结果'
+        : '核算结果'
     : '核算结果';
 
   return (
@@ -129,4 +135,17 @@ export default function IndexPage() {
 
         <View className={styles.content}>
           <Text className={styles.sectionTitle}>填写贷款信息</Text>
-          <C
+          <CalcCard onSubmit={handleCalc} />
+        </View>
+
+        {result && (
+          <>
+            <Text className={styles.sectionTitle}>{resultTitle}</Text>
+            <ResultCard result={result} onViewDetail={handleViewDetail} />
+          </>
+        )}
+      </ScrollView>
+      <CustomTabBar activeIndex={0} />
+    </View>
+  );
+}

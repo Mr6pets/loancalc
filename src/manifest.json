@@ -1,0 +1,18 @@
+{
+  "name": "贷款利率核算",
+  "short_name": "利率核算",
+  "description": "IRR 精算引擎 — 等额本息/等额本金/先息后本全覆盖",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f0f2f8",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

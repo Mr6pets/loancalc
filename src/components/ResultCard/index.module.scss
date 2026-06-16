@@ -169,6 +169,43 @@
   display: block;
 }
 
+// ============ 流水明细截断预览 ============
+.flowMiniList {
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.flowMiniItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 6rpx 0;
+  border-bottom: 1rpx dashed $color-divider;
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+.flowMiniDate {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.flowMiniAmt {
+  font-size: $font-size-xs;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.flowMiniMore {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-align: center;
+  display: block;
+  padding-top: 6rpx;
+}
+
 // ============ 判定 ============
 .verdict {
   display: flex;
@@ -208,4 +245,32 @@
   color: #fff;
 }
 
-.ver
+.verdictIconGood {
+  background: $gradient-safe;
+}
+
+.verdictIconBad {
+  background: $gradient-danger;
+}
+
+.verdictText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+  flex: 1;
+}
+
+// ============ 查看详情 ============
+.viewDetail {
+  @include flex-center;
+  margin-top: $spacing-md;
+  padding: $spacing-md 0 $spacing-sm;
+  border-top: 1rpx solid $color-divider;
+  gap: 6rpx;
+}
+
+.viewDetailText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  @include gradient-text($gradient-primary);
+}

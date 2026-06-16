@@ -1,22 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
   <head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-    <meta name="viewport" content="width=375,user-scalable=no" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-touch-fullscreen" content="yes" />
-    <meta name="format-detection" content="telephone=no,address=no" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="white" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <title>taro_template</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="利率核算" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+
+    <title>贷款利率核算</title>
     <script>
-      // 固定 html fontSize，防止 flexible 脚本动态修改
+      // 注册 Service Worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+      }
+    </script>
+    <script>
+      // 固定 html fontSize
       (function() {
         var html = document.documentElement;
         html.style.fontSize = '18px';
         Object.defineProperty(html.style, 'fontSize', {
           get: function() { return '18px'; },
-          set: function() { /* 忽略所有修改 */ }
+          set: function() { /* ignore */ }
         });
       })();
       <%= htmlWebpackPlugin.options.script %>

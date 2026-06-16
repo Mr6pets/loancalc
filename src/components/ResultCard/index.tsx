@@ -10,7 +10,7 @@ interface ResultCardProps {
 }
 
 const ResultCard: React.FC<ResultCardProps> = ({ result, onViewDetail }) => {
-  const { annualAPR, totalInterest, totalFee, totalPayment, isOvercharged, overchargeAmount, mode, repayType, schedule } = result;
+  const { annualAPR, totalInterest, totalFee, totalPayment, isOvercharged, overchargeAmount, mode, repayType, schedule, parsedFlows } = result;
   const rateHigh = annualAPR > 0.24;
   const rateModerate = annualAPR > 0.15 && annualAPR <= 0.24;
 
@@ -27,6 +27,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onViewDetail }) => {
   const offset = circumference * (1 - percent);
 
   const isForward = mode === 'forward';
+  const isFlow = mode === 'flow';
   const monthlyPayment = schedule.length > 0 ? schedule[0].payment : 0;
 
   return (
@@ -36,10 +37,10 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onViewDetail }) => {
         <View className={styles.headerAccent} />
         <View className={styles.cardHeaderRight}>
           <Text className={styles.cardTitle}>
-            {isForward ? `${repayTypeLabel(repayType)} 月供` : '核算结果'}
+            {isFlow ? 'XIRR 流水分析' : isForward ? `${repayTypeLabel(repayType)} 月供` : '核算结果'}
           </Text>
           <Text className={styles.cardSubtitle}>
-            {isForward ? '正向计算' : 'IRR 二分法精算'}
+            {isFlow ? '不规则现金流 IRR' : isForward ? '正向计算' : 'IRR 二分法精算'}
           </Text>
         </View>
       </View>
@@ -77,7 +78,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onViewDetail }) => {
         {/* 中心 */}
         <View className={styles.gaugeCenter}>
           <Text className={styles.gaugeLabel}>
-            {isForward ? '年化利率' : '实际年化'}
+            {isFlow ? '流水 XIRR' : isForward ? '年化利率' : '实际年化'}
           </Text>
           <Text className={styles.gaugeValue} style={{ color: ringColor.start }}>
             {fmtPct(annualAPR)}
@@ -100,6 +101,18 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onViewDetail }) => {
         </View>
       )}
 
+      {/* 流水模式：笔数 + 均额 */}
+      {isFlow && (
+        <View className={styles.pmtHighlight}>
+          <Text className={styles.pmtLabel}>
+            {parsedFlows ? parsedFlows.length : schedule.length} 笔还款 · 均额
+          </Text>
+          <Text className={styles.pmtValue}>
+            ¥{fmtMoney(schedule.length > 0 ? totalPayment / schedule.length : 0)}
+          </Text>
+        </View>
+      )}
+
       {/* 数据指标行 */}
       <View className={styles.metricsGrid}>
         <View className={styles.metricItem}>
@@ -113,11 +126,28 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onViewDetail }) => {
           <Text className={styles.metricLabel}>总利息</Text>
         </View>
         <View className={styles.metricItem}>
-          <View className={styles.metricDot} style={{ background: '#06b6d4' }} />
-          <Text className={styles.metricValue}>¥{fmtMoney(totalFee)}</Text>
-          <Text className={styles.metricLabel}>总费用</Text>
+          <View className={styles.metricDot} style={{ background: isFlow ? '#10b981' : '#06b6d4' }} />
+          <Text className={styles.metricValue}>
+            {isFlow ? `${schedule.length}笔` : `¥${fmtMoney(totalFee)}`}
+          </Text>
+          <Text className={styles.metricLabel}>{isFlow ? '流水笔数' : '总费用'}</Text>
         </View>
       </View>
+
+      {/* 流水模式：流水明细截断预览 */}
+      {isFlow && parsedFlows && parsedFlows.length > 0 && (
+        <View className={styles.flowMiniList}>
+          {parsedFlows.slice(0, 6).map((f, i) => (
+            <View key={i} className={styles.flowMiniItem}>
+              <Text className={styles.flowMiniDate}>{f.date || `第${i + 1}期`}</Text>
+              <Text className={styles.flowMiniAmt}>¥{fmtMoney(f.amount)}</Text>
+            </View>
+          ))}
+          {parsedFlows.length > 6 && (
+            <Text className={styles.flowMiniMore}>...共 {parsedFlows.length} 笔</Text>
+          )}
+        </View>
+      )}
 
       {/* 多收费判定 */}
       {isOvercharged !== null && (
@@ -135,4 +165,20 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onViewDetail }) => {
 
       {onViewDetail && (
         <View className={styles.viewDetail} onClick={onViewDetail}>
-          <Text cla
+          <Text className={styles.viewDetailText}>查看还款明细</Text>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="url(#arrowGrad)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+            <defs>
+              <linearGradient id="arrowGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#4f46e5"/>
+                <stop offset="100%" stopColor="#06b6d4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </View>
+      )}
+    </View>
+  );
+};
+
+export default ResultCard;
