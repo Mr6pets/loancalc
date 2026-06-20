@@ -1,30 +1,26 @@
 # ============================================================
 # LoanCalc 后端 Docker 镜像
-# 构建: docker build -t loancalc-server .
-# 运行: docker run -d -p 3002:3002 -v loancalc_data:/app/server/data --name loancalc-server loancalc-server
+# 基于 node:20-slim（Debian），better-sqlite3 有预编译二进制
+# 无需安装 gcc/g++，构建速度从 40 分钟降到几十秒
 # ============================================================
 
-FROM node:20-alpine
-
-# better-sqlite3 需要编译工具
-RUN apk add --no-cache python3 make g++
+FROM node:20-slim
 
 WORKDIR /app
 
-# 只复制 server 依赖文件，利用 Docker 缓存层
+# 只复制依赖文件，利用 Docker 缓存层
 COPY server/package.json server/package-lock.json ./
 
-# 安装生产依赖
+# 安装生产依赖（better-sqlite3 使用预编译二进制，无需编译工具）
 RUN npm ci --omit=dev && npm cache clean --force
 
 # 复制 server 源码
 COPY server/ ./
 
-# 数据目录（挂载点，用于持久化 SQLite 数据库）
+# 数据目录
 RUN mkdir -p /app/data && chown -R node:node /app
 VOLUME ["/app/data"]
 
-# 切换到非 root 用户
 USER node
 
 EXPOSE 3002

@@ -66,7 +66,7 @@ if (useMySQL) {
 else {
   const Database = require('better-sqlite3');
 
-  const dbFile = path.join(__dirname, 'data.db');
+  const dbFile = path.join(__dirname, 'data', 'data.db');
   const sqlite = new Database(dbFile);
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
