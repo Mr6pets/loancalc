@@ -1,0 +1,40 @@
+# ─── 依赖 ───
+node_modules/
+server/node_modules/
+
+# ─── 构建产物 ───
+dist/
+release/
+
+# ─── 源码（后端只用到 server/）───
+src/
+config/
+scripts/
+types/
+
+# ─── 运行时数据 ───
+server/data.db
+server/data.db-shm
+server/data.db-wal
+
+# ─── IDE / 工具 ───
+.vscode/
+.idea/
+*.log
+
+# ─── 环境变量（敏感信息不打包进镜像）───
+.env
+server/.env
+
+# ─── 杂项 ───
+.git/
+.gitignore
+README.md
+*.ps1
+*.py
+nginx/
+demo.html
+project.config.json
+project.tt.json
+babel.config.js
+tsconfig.json

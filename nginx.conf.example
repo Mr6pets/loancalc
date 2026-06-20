@@ -1,15 +1,15 @@
-# LoanCalc 部署 Nginx 配置
-# 已集成到 d:\GitHubStore\loancalc\nginx\conf.d\includes\99_static_subdomains.conf
-# 此文件仅作参考
+# LoanCalc 部署 Nginx 配置（宝塔面板 + Docker）
+# 前端静态文件由宝塔网站管理，后端 Node.js 由 Docker 运行
+# 完整配置见: nginx/conf.d/includes/03_loadcalc.conf
 
 # 前端静态文件（SPA）
 location ^~ /loancalc {
-    alias /home/loancalc/dist/;
+    alias /www/wwwroot/loancalc/h5/;
     index index.html;
     try_files $uri $uri/ /loancalc/index.html;
 }
 
-# API 反向代理到 Node 服务（端口 3002）
+# API 反向代理到 Docker 容器（端口 3002）
 location ^~ /loancalc/api/ {
     proxy_pass http://127.0.0.1:3002/api/;
     proxy_http_version 1.1;
