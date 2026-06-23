@@ -31,6 +31,15 @@ server/data.db-wal
 # PDF 账单文件
 pdf/
 
+# 个人账单及合同文件（敏感数据）
+files/
+
+# 个人金融投诉文档
+金融投诉文档_浦发信用卡费用争议.md
+
+# 账单分析脚本
+analyze_bills.py
+
 # Python 生成数据
 extracted_data.json
 
